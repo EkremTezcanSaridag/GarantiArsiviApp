@@ -317,40 +317,60 @@ export default function AddScreen() {
       }
 
       const triggerCalendarPrompt = (docTitle: string, docTypeLabel: string) => {
-        Alert.alert(
-          'Başarılı',
-          'Belge kaydedildi! Bu belgeyi telefonunuzun takvimine hatırlatıcı olarak eklemek ister misiniz?',
-          [
-            { 
-              text: 'Hayır', 
-              style: 'cancel', 
-              onPress: () => {
-                resetForm();
-                router.push('/');
-              } 
-            },
-            { 
-              text: 'Takvime Ekle', 
-              style: 'default',
-              onPress: () => {
-                const encTitle = encodeURIComponent(`${docTitle} - Hatırlatma`);
-                const encDetails = encodeURIComponent(`Dijital Arşiv: ${docTypeLabel}`);
-                const [day, month, year] = formattedDate.split('.').map(Number);
-                const tDate = new Date(year, month - 1, day);
-                const formatGDate = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g,"").split('T')[0];
-                const dateStr = formatGDate(tDate);
-                const nextDayStr = formatGDate(new Date(tDate.getTime() + 24*60*60*1000));
-                const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encTitle}&details=${encDetails}&dates=${dateStr}/${nextDayStr}`;
-                import('react-native').then(({ Linking }) => {
-                  Linking.openURL(gCalUrl).catch(() => {}).finally(() => {
-                    resetForm();
-                    router.push('/');
+        if (Platform.OS === 'web') {
+          const wantCalendar = window.confirm('Belge kaydedildi! Bu belgeyi takviminize hatırlatıcı olarak eklemek ister misiniz?');
+          if (wantCalendar) {
+            const encTitle = encodeURIComponent(`${docTitle} - Hatırlatma`);
+            const encDetails = encodeURIComponent(`Dijital Arşiv: ${docTypeLabel}`);
+            const [day, month, year] = formattedDate.split('.').map(Number);
+            const tDate = new Date(year, month - 1, day);
+            const formatGDate = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g,"").split('T')[0];
+            const dateStr = formatGDate(tDate);
+            const nextDayStr = formatGDate(new Date(tDate.getTime() + 24*60*60*1000));
+            const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encTitle}&details=${encDetails}&dates=${dateStr}/${nextDayStr}`;
+            window.open(gCalUrl, '_blank');
+            resetForm();
+            router.push('/');
+          } else {
+            resetForm();
+            router.push('/');
+          }
+        } else {
+          Alert.alert(
+            'Başarılı',
+            'Belge kaydedildi! Bu belgeyi telefonunuzun takvimine hatırlatıcı olarak eklemek ister misiniz?',
+            [
+              { 
+                text: 'Hayır', 
+                style: 'cancel', 
+                onPress: () => {
+                  resetForm();
+                  router.push('/');
+                } 
+              },
+              { 
+                text: 'Takvime Ekle', 
+                style: 'default',
+                onPress: () => {
+                  const encTitle = encodeURIComponent(`${docTitle} - Hatırlatma`);
+                  const encDetails = encodeURIComponent(`Dijital Arşiv: ${docTypeLabel}`);
+                  const [day, month, year] = formattedDate.split('.').map(Number);
+                  const tDate = new Date(year, month - 1, day);
+                  const formatGDate = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g,"").split('T')[0];
+                  const dateStr = formatGDate(tDate);
+                  const nextDayStr = formatGDate(new Date(tDate.getTime() + 24*60*60*1000));
+                  const gCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encTitle}&details=${encDetails}&dates=${dateStr}/${nextDayStr}`;
+                  import('react-native').then(({ Linking }) => {
+                    Linking.openURL(gCalUrl).catch(() => {}).finally(() => {
+                      resetForm();
+                      router.push('/');
+                    });
                   });
-                });
+                }
               }
-            }
-          ]
-        );
+            ]
+          );
+        }
       };
 
       if (images.length > 0) {

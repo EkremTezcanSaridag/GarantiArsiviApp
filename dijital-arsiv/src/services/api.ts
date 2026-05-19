@@ -272,8 +272,13 @@ export const addManualRecord = async (
   const numericAmount = parseTurkishNumber(amount);
 
   // GG.AA.YYYY -> YYYY-AA-GG
-  const [d, m, y] = date.split('.');
-  const isoDate = `${y}-${m}-${d}`;
+  let isoDate = null;
+  if (date && date.includes('.')) {
+    const [d, m, y] = date.split('.');
+    if (d && m && y) isoDate = `${y}-${m}-${d}`;
+  } else {
+    isoDate = date || null;
+  }
 
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData?.user?.id;
